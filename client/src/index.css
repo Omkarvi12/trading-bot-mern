@@ -1,0 +1,1244 @@
+/* =========================================================
+   GLOBAL RESET
+========================================================= */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+:root {
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  color: #f5f5f5;
+  background: #0b0d12;
+}
+
+body {
+  background: #0b0d12;
+  color: #f5f5f5;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+.dashboard {
+  min-height: 100vh;
+  width: 100%;
+  padding: 28px;
+
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(80, 70, 180, 0.12),
+      transparent 30%
+    ),
+    #0b0d12;
+}
+
+
+/* =========================================================
+   DASHBOARD HEADER
+========================================================= */
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+
+  margin-bottom: 28px;
+}
+
+.topbar h1 {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.topbar p {
+  margin-top: 5px;
+
+  color: #858b9a;
+  font-size: 14px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+
+/* =========================================================
+   BOT STATUS
+========================================================= */
+
+.bot-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 9px 14px;
+
+  border: 1px solid #26352d;
+  border-radius: 20px;
+
+  background: #111814;
+
+  color: #6ee7a0;
+  font-size: 13px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+  background: #35d879;
+
+  box-shadow: 0 0 10px rgba(53, 216, 121, 0.7);
+}
+
+.status-dot.online {
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+}
+
+.status-dot.offline {
+  background: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
+}
+
+
+/* =========================================================
+   ICON BUTTON
+========================================================= */
+
+.icon-button {
+  width: 40px;
+  height: 40px;
+
+  flex-shrink: 0;
+
+  border: 1px solid #242832;
+  border-radius: 9px;
+
+  background: #151820;
+  color: #c7cad2;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* =========================================================
+   CONTROL PANEL
+========================================================= */
+
+.control-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  padding: 20px;
+
+  border: 1px solid #242832;
+  border-radius: 14px;
+
+  background: #11141b;
+
+  margin-bottom: 22px;
+}
+
+.bot-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  min-width: 0;
+}
+
+.bot-icon {
+  width: 48px;
+  height: 48px;
+
+  flex-shrink: 0;
+
+  border-radius: 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #211a3b;
+  color: #a78bfa;
+}
+
+.bot-info h2 {
+  font-size: 17px;
+}
+
+.bot-info p {
+  margin-top: 4px;
+
+  color: #7f8593;
+  font-size: 13px;
+}
+
+.market-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  color: #cfd2da;
+  font-size: 14px;
+}
+
+.mode-badge {
+  padding: 5px 9px;
+
+  border-radius: 5px;
+
+  background: #352b14;
+  color: #f2c75c;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.bot-controls {
+  display: flex;
+  gap: 9px;
+}
+
+.control-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  padding: 9px 14px;
+
+  border: 0;
+  border-radius: 8px;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.control-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.start {
+  background: #166534;
+  color: #bbf7d0;
+}
+
+.stop {
+  background: #35191d;
+  color: #fca5a5;
+}
+
+
+/* =========================================================
+   DASHBOARD STATS
+========================================================= */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+
+  margin-bottom: 22px;
+}
+
+.stat-card {
+  min-width: 0;
+
+  padding: 20px;
+
+  border: 1px solid #242832;
+  border-radius: 14px;
+
+  background: #11141b;
+}
+
+.stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  color: #858b99;
+  font-size: 13px;
+}
+
+.stat-icon {
+  width: 35px;
+  height: 35px;
+
+  flex-shrink: 0;
+
+  border-radius: 8px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #1a1e28;
+  color: #9ca3af;
+}
+
+.stat-card h2 {
+  margin-top: 16px;
+
+  font-size: 25px;
+  font-weight: 700;
+}
+
+.stat-change {
+  margin-top: 7px;
+
+  color: #57d68a;
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   MAIN GRID
+========================================================= */
+
+.main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 20px;
+
+  margin-bottom: 22px;
+}
+
+.chart-card,
+.risk-card,
+.trades-card {
+  border: 1px solid #242832;
+  border-radius: 14px;
+
+  background: #11141b;
+}
+
+.chart-card {
+  min-height: 410px;
+  padding: 20px;
+}
+
+.risk-card {
+  padding: 20px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.card-header h2 {
+  font-size: 17px;
+}
+
+.card-header p {
+  margin-top: 4px;
+
+  color: #7f8593;
+  font-size: 12px;
+}
+
+.price-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+
+  flex-shrink: 0;
+}
+
+.price-display strong {
+  font-size: 20px;
+}
+
+.positive {
+  color: #55d98a !important;
+}
+
+
+/* =========================================================
+   CHART
+========================================================= */
+
+.chart-placeholder {
+  height: 315px;
+
+  margin-top: 25px;
+
+  border: 1px dashed #2b303b;
+  border-radius: 10px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  color: #676d7a;
+}
+
+.chart-line {
+  margin-bottom: 20px;
+
+  color: #8b5cf6;
+
+  font-size: 40px;
+  letter-spacing: 8px;
+}
+
+
+/* =========================================================
+   PRICE CHART COMPONENT
+========================================================= */
+
+.price-chart-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 400px;
+}
+
+.chart-loading,
+.chart-error {
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 2;
+
+  color: #7f8593;
+  font-size: 13px;
+}
+
+.chart-error {
+  color: #f87171;
+}
+
+
+/* =========================================================
+   RISK
+========================================================= */
+
+.risk-item {
+  margin-top: 28px;
+}
+
+.risk-item > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+
+  margin-bottom: 9px;
+
+  color: #858b99;
+  font-size: 13px;
+}
+
+.risk-item strong {
+  color: #f1f2f4;
+}
+
+.progress {
+  width: 100%;
+  height: 7px;
+
+  overflow: hidden;
+
+  border-radius: 10px;
+
+  background: #20242d;
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+
+  border-radius: 10px;
+
+  background: #8b5cf6;
+}
+
+.risk-safe {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  margin-top: 28px;
+  padding: 11px;
+
+  border-radius: 8px;
+
+  background: #102019;
+
+  color: #6ee7a0;
+
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   TRADES
+========================================================= */
+
+.trades-card {
+  padding: 20px;
+}
+
+.view-all {
+  border: 0;
+  background: transparent;
+
+  color: #a78bfa;
+  font-size: 13px;
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+
+  margin-top: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  padding: 13px;
+
+  text-align: left;
+
+  border-bottom: 1px solid #272b34;
+
+  color: #737987;
+
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+td {
+  padding: 16px 13px;
+
+  border-bottom: 1px solid #1d2028;
+
+  color: #bfc3cc;
+
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+td strong {
+  color: #f2f3f5;
+}
+
+.side-buy,
+.side-sell {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.side-buy {
+  color: #55d98a;
+}
+
+.side-sell {
+  color: #f27c86;
+}
+
+.status-open,
+.status-closed {
+  padding: 5px 8px;
+
+  border-radius: 5px;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.status-open {
+  background: #13251c;
+  color: #67e29a;
+}
+
+.status-closed {
+  background: #22252d;
+  color: #9da2ae;
+}
+
+
+/* =========================================================
+   BACKTEST PAGE
+========================================================= */
+
+.bt-page {
+  width: 100%;
+  min-height: 100vh;
+
+  padding: 28px;
+
+  color: #f5f5f5;
+  background: #0b0d12;
+}
+
+
+/* =========================================================
+   BACKTEST HEADER
+========================================================= */
+
+.bt-header {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  margin-bottom: 22px;
+}
+
+.bt-title-area h1 {
+  margin: 0;
+
+  color: #f5f5f5;
+
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.bt-title-area p {
+  margin: 7px 0 0;
+
+  color: #7f8aa3;
+  font-size: 13px;
+}
+
+.bt-run-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  padding: 10px 16px;
+
+  border: 1px solid #6d4aff;
+  border-radius: 8px;
+
+  background: #171224;
+  color: #a78bfa;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.bt-run-button:hover {
+  background: #211936;
+  border-color: #8b5cf6;
+
+  transform: translateY(-1px);
+}
+
+.bt-run-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+
+/* =========================================================
+   BACKTEST STAT GRID
+========================================================= */
+
+.bt-stat-grid {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+
+  margin-bottom: 28px;
+}
+
+.bt-stat-card {
+  min-width: 0;
+  min-height: 150px;
+
+  padding: 20px;
+
+  border: 1px solid #242832;
+  border-radius: 14px;
+
+  background: #11141b;
+}
+
+.bt-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  color: #8b95aa;
+  font-size: 13px;
+}
+
+.bt-icon {
+  width: 38px;
+  height: 38px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  background: #1a1e28;
+  color: #9ca3af;
+}
+
+.bt-stat-card h2 {
+  margin: 22px 0 0;
+
+  color: #f5f5f5;
+
+  font-size: 27px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.bt-trade-count {
+  display: block;
+
+  margin-top: 12px;
+
+  color: #4ade80;
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   BACKTEST PROFIT / LOSS
+========================================================= */
+
+.bt-profit {
+  color: #4ade80 !important;
+}
+
+.bt-loss {
+  color: #f87171 !important;
+}
+
+
+/* =========================================================
+   BACKTEST PERFORMANCE
+========================================================= */
+
+.bt-performance {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+
+  margin-bottom: 28px;
+}
+
+.bt-performance-item {
+  min-width: 0;
+  min-height: 62px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+
+  gap: 7px;
+}
+
+.bt-performance-item span {
+  display: block;
+
+  color: #8791a5;
+  font-size: 13px;
+}
+
+.bt-performance-item strong {
+  display: block;
+
+  color: #f3f4f6;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   BACKTEST TRADES
+========================================================= */
+
+.bt-trades-section {
+  width: 100%;
+
+  overflow: hidden;
+
+  border: 1px solid #242832;
+  border-radius: 14px;
+
+  background: #11141b;
+}
+
+.bt-table-wrapper {
+  width: 100%;
+
+  overflow-x: auto;
+}
+
+.bt-table {
+  width: 100%;
+  min-width: 850px;
+
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.bt-table thead th {
+  padding: 15px 16px;
+
+  border-bottom: 1px solid #292e38;
+
+  color: #788399;
+
+  text-align: left;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  text-transform: uppercase;
+
+  white-space: nowrap;
+}
+
+.bt-table tbody td {
+  padding: 16px;
+
+  border-bottom: 1px solid #1d2129;
+
+  color: #bfc6d5;
+
+  font-size: 13px;
+
+  white-space: nowrap;
+}
+
+.bt-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.bt-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.bt-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+
+/* =========================================================
+   BACKTEST TRADE SIDE
+========================================================= */
+
+.bt-side {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.bt-buy {
+  color: #4ade80;
+}
+
+.bt-sell {
+  color: #fb7185;
+}
+
+
+/* =========================================================
+   BACKTEST TRADE PNL
+========================================================= */
+
+.bt-trade-profit {
+  color: #4ade80;
+  font-weight: 600;
+}
+
+.bt-trade-loss {
+  color: #f87171;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   BACKTEST CLOSE REASON
+========================================================= */
+
+.bt-close-reason {
+  color: #b7c0d2;
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   BACKTEST NO TRADES
+========================================================= */
+
+.bt-no-trades {
+  padding: 45px !important;
+
+  text-align: center !important;
+
+  color: #697386 !important;
+
+  font-size: 13px !important;
+}
+
+
+/* =========================================================
+   BACKTEST SCROLLBAR
+========================================================= */
+
+.bt-table-wrapper::-webkit-scrollbar,
+.table-wrapper::-webkit-scrollbar {
+  height: 7px;
+}
+
+.bt-table-wrapper::-webkit-scrollbar-track,
+.table-wrapper::-webkit-scrollbar-track {
+  background: #11141b;
+}
+
+.bt-table-wrapper::-webkit-scrollbar-thumb,
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: #303642;
+  border-radius: 10px;
+}
+
+
+/* =========================================================
+   REFRESH ANIMATION
+========================================================= */
+
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE — TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+  .stats-grid,
+  .bt-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bt-performance {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE — 1000px
+========================================================= */
+
+@media (max-width: 1000px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .control-panel {
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+
+  .bot-info {
+    flex: 1;
+  }
+
+  .market-info {
+    flex-wrap: wrap;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE — MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+  .dashboard,
+  .bt-page {
+    padding: 16px;
+  }
+
+  /* ---------- Dashboard Header ---------- */
+
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 15px;
+
+    margin-bottom: 20px;
+  }
+
+  .topbar h1 {
+    font-size: 22px;
+  }
+
+  .header-actions {
+    width: 100%;
+
+    justify-content: space-between;
+  }
+
+  /* ---------- Control Panel ---------- */
+
+  .control-panel {
+    flex-direction: column;
+    align-items: stretch;
+
+    padding: 16px;
+  }
+
+  .bot-info {
+    width: 100%;
+  }
+
+  .market-info {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .bot-controls {
+    width: 100%;
+  }
+
+  .control-button {
+    flex: 1;
+
+    min-height: 42px;
+  }
+
+  /* ---------- Dashboard Stats ---------- */
+
+  .stats-grid,
+  .bt-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card,
+  .bt-stat-card {
+    padding: 17px;
+  }
+
+  /* ---------- Main Grid ---------- */
+
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-card {
+    min-height: auto;
+    padding: 16px;
+  }
+
+  .risk-card {
+    padding: 16px;
+  }
+
+  /* ---------- Card Header ---------- */
+
+  .card-header {
+    align-items: flex-start;
+  }
+
+  .price-display strong {
+    font-size: 17px;
+  }
+
+  /* ---------- Chart ---------- */
+
+  .chart-placeholder {
+    height: 300px;
+  }
+
+  .price-chart-wrapper {
+    min-height: 320px;
+  }
+
+  /* ---------- Trades ---------- */
+
+  .trades-card {
+    padding: 16px;
+  }
+
+  .table-wrapper {
+    margin-top: 15px;
+  }
+
+  /* ---------- Backtest ---------- */
+
+  .bt-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .bt-title-area h1 {
+    font-size: 20px;
+  }
+
+  .bt-run-button {
+    width: 100%;
+    min-height: 42px;
+  }
+
+  .bt-performance {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .bt-trades-section {
+    border-radius: 10px;
+  }
+
+  .bt-table {
+    min-width: 850px;
+  }
+}
+
+
+/* =========================================================
+   VERY SMALL MOBILE
+========================================================= */
+
+@media (max-width: 420px) {
+  .dashboard,
+  .bt-page {
+    padding: 12px;
+  }
+
+  .topbar h1 {
+    font-size: 20px;
+  }
+
+  .topbar p {
+    font-size: 12px;
+  }
+
+  .bot-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .bot-info h2 {
+    font-size: 15px;
+  }
+
+  .bot-info p {
+    font-size: 12px;
+  }
+
+  .stats-grid {
+    gap: 12px;
+  }
+
+  .stat-card h2 {
+    font-size: 23px;
+  }
+
+  .bt-stat-card h2 {
+    font-size: 24px;
+  }
+
+  .header-actions {
+    gap: 8px;
+  }
+
+  .bot-status {
+    padding: 8px 11px;
+    font-size: 12px;
+  }
+}
