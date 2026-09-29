@@ -1,5 +1,8 @@
-const ccxt = require("ccxt");
 const BrokerInterface = require("./brokerInterface");
+const {
+  createExchange,
+  exchangeId,
+} = require("../utils/exchangeFactory");
 
 class CCXTExecutor extends BrokerInterface {
   constructor() {
@@ -10,36 +13,30 @@ class CCXTExecutor extends BrokerInterface {
     ).toLowerCase();
 
     // ==========================================
-    // BINANCE CONFIG
+    // EXCHANGE
     // ==========================================
 
-    const exchangeConfig = {
-      enableRateLimit: true,
-    };
-
-    // Credentials only required in LIVE mode
+    // IMPORTANT:
+    // In dry-run mode we don't need to connect
+    // to Binance at all.
     if (this.mode === "live") {
-      if (
-        !process.env.BINANCE_API_KEY ||
-        !process.env.BINANCE_SECRET_KEY
-      ) {
-        throw new Error(
-          "Binance API credentials are missing"
-        );
-      }
+      this.exchange = createExchange({
+        authenticated: true,
+      });
 
-      exchangeConfig.apiKey =
-        process.env.BINANCE_API_KEY;
+      console.log(
+        `🔌 ${exchangeId} executor initialized | Mode: LIVE`
+      );
+    } else {
+      this.exchange = null;
 
-      exchangeConfig.secret =
-        process.env.BINANCE_SECRET_KEY;
+      console.log(
+        "🧪 CCXT executor initialized | Mode: DRY-RUN"
+      );
+      console.log(
+        "ℹ️ Binance API disabled in dry-run mode"
+      );
     }
-
-    this.exchange = new ccxt.binance(exchangeConfig);
-
-    console.log(
-      `🔌 Binance executor initialized | Mode: ${this.mode.toUpperCase()}`
-    );
   }
 
   // ==========================================
@@ -79,6 +76,32 @@ class CCXTExecutor extends BrokerInterface {
         "Trading symbol is required"
       );
     }
+
+    // ==========================================
+    // DRY-RUN DEMO PRICE
+    // ==========================================
+
+    if (this.mode === "dry-run") {
+      const demoPrices = {
+        "BTC/USDT": 85000,
+        "ETH/USDT": 2800,
+        "BNB/USDT": 600,
+        "SOL/USDT": 200,
+      };
+
+      const price =
+        demoPrices[symbol] || 100;
+
+      console.log(
+        `🧪 DRY-RUN price | ${symbol}: ${price}`
+      );
+
+      return price;
+    }
+
+    // ==========================================
+    // LIVE PRICE
+    // ==========================================
 
     const ticker =
       await this.exchange.fetchTicker(symbol);
@@ -155,7 +178,7 @@ class CCXTExecutor extends BrokerInterface {
     }
 
     // ==========================================
-    // LIVE BINANCE ORDER
+    // LIVE ORDER
     // ==========================================
 
     console.log(
