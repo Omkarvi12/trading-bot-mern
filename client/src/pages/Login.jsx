@@ -37,10 +37,20 @@ function Login() {
     } catch (error) {
       console.error("Login error:", error);
 
-      setError(
-        error.response?.data?.message ||
-        "Login failed. Please check your email and password."
-      );
+      const status = error.response?.status;
+      const serverMessage = error.response?.data?.message;
+
+      if (!error.response) {
+        setError("Cannot reach the login server. Check your connection and API deployment.");
+      } else if (status === 401) {
+        setError(serverMessage || "Invalid email or password.");
+      } else if (status === 503) {
+        setError(serverMessage || "Authentication is not configured on the server.");
+      } else if (status >= 500) {
+        setError(`Server error (${status}) during login. Check the Render logs for details.`);
+      } else {
+        setError(serverMessage || `Login request failed (${status}).`);
+      }
     } finally {
       setLoading(false);
     }

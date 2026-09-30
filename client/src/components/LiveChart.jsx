@@ -9,6 +9,8 @@ import {
   Tooltip,
 } from "recharts";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 const LiveChart = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,8 +18,12 @@ const LiveChart = () => {
   const fetchCandles = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/test/market-data?symbol=BTC%2FUSDT&timeframe=5m&limit=100"
+        `${API_URL}/api/test/market-data?symbol=BTC%2FUSDT&timeframe=5m&limit=100`
       );
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
 
       const result = await response.json();
 
@@ -29,19 +35,13 @@ const LiveChart = () => {
             hour: "2-digit",
             minute: "2-digit",
           }),
-
-          price: Number(
-            candle.close ?? candle.price ?? 0
-          ),
+          price: Number(candle.close ?? candle.price ?? 0),
         }));
 
         setData(chartData);
       }
     } catch (error) {
-      console.error(
-        "❌ Live chart error:",
-        error.message
-      );
+      console.error("❌ Live chart error:", error.message);
     } finally {
       setLoading(false);
     }
@@ -51,10 +51,7 @@ const LiveChart = () => {
     fetchCandles();
 
     // Refresh every 5 minutes
-    const interval = setInterval(
-      fetchCandles,
-      5 * 60 * 1000
-    );
+    const interval = setInterval(fetchCandles, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, []);
@@ -64,10 +61,7 @@ const LiveChart = () => {
       <div className="live-chart-header">
         <div>
           <h3>BTC/USDT</h3>
-
-          <span>
-            Live Market • 5m
-          </span>
+          <span>Live Market • 5m</span>
         </div>
 
         <div className="live-indicator">
@@ -78,18 +72,11 @@ const LiveChart = () => {
 
       <div className="live-chart">
         {loading ? (
-          <div className="chart-loading">
-            Loading market data...
-          </div>
+          <div className="chart-loading">Loading market data...</div>
         ) : data.length === 0 ? (
-          <div className="chart-loading">
-            No market data available
-          </div>
+          <div className="chart-loading">No market data available</div>
         ) : (
-          <ResponsiveContainer
-            width="100%"
-            height="100%"
-          >
+          <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data}>
               <defs>
                 <linearGradient
@@ -99,22 +86,12 @@ const LiveChart = () => {
                   x2="0"
                   y2="1"
                 >
-                  <stop
-                    offset="0%"
-                    stopOpacity={0.25}
-                  />
-
-                  <stop
-                    offset="100%"
-                    stopOpacity={0}
-                  />
+                  <stop offset="0%" stopOpacity={0.25} />
+                  <stop offset="100%" stopOpacity={0} />
                 </linearGradient>
               </defs>
 
-              <CartesianGrid
-                strokeDasharray="3 3"
-                opacity={0.12}
-              />
+              <CartesianGrid strokeDasharray="3 3" opacity={0.12} />
 
               <XAxis
                 dataKey="time"
@@ -130,13 +107,10 @@ const LiveChart = () => {
 
               <Tooltip
                 formatter={(value) => [
-                  `$${Number(value).toLocaleString(
-                    "en-US",
-                    {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    }
-                  )}`,
+                  `$${Number(value).toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}`,
                   "Price",
                 ]}
               />

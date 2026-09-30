@@ -1,12 +1,13 @@
-const ccxt = require("ccxt");
 const Candle = require("../models/Candle");
+const {
+  createExchange,
+  exchangeId,
+} = require("../utils/exchangeFactory");
 
-const exchange = new ccxt.binance({
-  enableRateLimit: true,
-});
+const exchange = createExchange();
 
 /**
- * Fetch OHLCV candles from Binance
+ * Fetch OHLCV candles from the configured exchange
  *
  * @param {string} symbol - Example: BTC/USDT
  * @param {string} timeframe - Example: 5m, 15m, 1h
@@ -44,7 +45,7 @@ const fetchCandles = async (
 
     return candles;
   } catch (error) {
-    console.error("❌ Failed to fetch market data:");
+    console.error(`❌ Failed to fetch market data from ${exchangeId}:`);
     console.error(error.message);
 
     throw error;

@@ -1,6 +1,10 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
+const hasJwtSecret = () =>
+  typeof process.env.JWT_SECRET === "string" &&
+  process.env.JWT_SECRET.trim().length > 0;
+
 // ==========================================
 // CREATE JWT TOKEN
 // ==========================================
@@ -26,6 +30,13 @@ const generateToken = (user) => {
 
 const register = async (req, res) => {
   try {
+    if (!hasJwtSecret()) {
+      return res.status(503).json({
+        success: false,
+        message: "Authentication is not configured on the server",
+      });
+    }
+
     const {
       name,
       email,
@@ -130,6 +141,13 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
+    if (!hasJwtSecret()) {
+      return res.status(503).json({
+        success: false,
+        message: "Authentication is not configured on the server",
+      });
+    }
+
     const {
       email,
       password,

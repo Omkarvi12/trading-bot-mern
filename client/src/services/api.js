@@ -1,38 +1,49 @@
 import axios from "axios";
 
+// ==========================================
+// API BASE URL
+// ==========================================
+// VITE_API_URL me sirf backend ka root daalo, /api ke bina:
+//   https://trading-bot-mern.onrender.com
+// Agar galti se /api ya trailing slash laga bhi diya to niche clean ho jayega.
+const RAW_URL =
+  import.meta.env.VITE_API_URL || "https://trading-bot-mern.onrender.com";
+
+export const API_URL = RAW_URL.replace(/\/+$/, "").replace(/\/api$/, "");
+
+const API_BASE_URL = `${API_URL}/api`;
+
 const API = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
 // ==========================================
-// AUTH TOKEN INTERCEPTOR
+// TOKEN INTERCEPTOR
 // ==========================================
+const attachToken = (config) => {
+  const token = localStorage.getItem("token");
 
-API.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-);
+
+  return config;
+};
+
+API.interceptors.request.use(attachToken, (error) => Promise.reject(error));
+
+// Dashboard / PriceChart jaise files seedha `axios` use karte hain,
+// unme bhi token jaye isliye global axios pe bhi lagaya hai.
+axios.interceptors.request.use(attachToken);
 
 // ==========================================
 // RESPONSE INTERCEPTOR
 // ==========================================
-
 API.interceptors.response.use(
   (response) => response,
-
   (error) => {
     if (error.response?.status === 401) {
       console.log("🔒 Authentication required");
@@ -40,7 +51,8 @@ API.interceptors.response.use(
       localStorage.removeItem("token");
       localStorage.removeItem("user");
 
-      if (!window.location.pathname.startsWith("/login")) {
+      const path = window.location.pathname;
+      if (!path.startsWith("/login") && !path.startsWith("/register")) {
         window.location.replace("/login");
       }
     }
@@ -50,54 +62,21 @@ API.interceptors.response.use(
 );
 
 // ==========================================
-// BOT STATUS
+// BOT
 // ==========================================
-
-export const getBotStatus = async () => {
-  const response = await API.get("/bot/status");
-  return response.data;
-};
+export const getBotStatus = async () => (await API.get("/bot/status")).data;
+export const startBot = async () => (await API.post("/bot/start")).data;
+export const stopBot = async () => (await API.post("/bot/stop")).data;
 
 // ==========================================
-// START BOT
+// DASHBOARD / TRADES
 // ==========================================
-
-export const startBot = async () => {
-  const response = await API.post("/bot/start");
-  return response.data;
-};
-
-// ==========================================
-// STOP BOT
-// ==========================================
-
-export const stopBot = async () => {
-  const response = await API.post("/bot/stop");
-  return response.data;
-};
-
-// ==========================================
-// DASHBOARD
-// ==========================================
-
-export const getDashboard = async () => {
-  const response = await API.get("/dashboard");
-  return response.data;
-};
-
-// ==========================================
-// TRADES
-// ==========================================
-
-export const getTrades = async () => {
-  const response = await API.get("/trades");
-  return response.data;
-};
+export const getDashboard = async () => (await API.get("/dashboard")).data;
+export const getTrades = async () => (await API.get("/trades")).data;
 
 // ==========================================
 // BACKTEST
 // ==========================================
-
 export const runBacktest = async ({
   symbol = "BTC/USDT",
   timeframe = "5m",
@@ -119,89 +98,40 @@ export const runBacktest = async ({
 };
 
 // ==========================================
-// RISK MANAGEMENT
+// RISK / MARKET
 // ==========================================
+export const getRiskStatus = async () => (await API.get("/risk/status")).data;
 
-export const getRiskStatus = async () => {
-  const response = await API.get("/risk/status");
+export const getMarketPrice = async (symbol = "BTC/USDT") =>
+  (await API.get("/market/price", { params: { symbol } })).data;
+
+// ==========================================
+// AUTH
+// ==========================================
+export const registerUser = async ({ name, email, password }) => {
+  const response = await API.post("/auth/register", { name, email, password });
   return response.data;
 };
 
-// ==========================================
-// LIVE MARKET PRICE
-// ==========================================
+export const loginUser = async ({ email, password }) => {
+  const response = await API.post("/auth/login", { email, password });
 
-export const getMarketPrice = async (
-  symbol = "BTC/USDT"
-) => {
-  const response = await API.get("/market/price", {
-    params: {
-      symbol,
-    },
-  });
-
-  return response.data;
-};
-
-// ==========================================
-// AUTHENTICATION
-// ==========================================
-
-export const registerUser = async ({
-  name,
-  email,
-  password,
-}) => {
-  const response = await API.post("/auth/register", {
-    name,
-    email,
-    password,
-  });
-
-  return response.data;
-};
-
-export const loginUser = async ({
-  email,
-  password,
-}) => {
-  const response = await API.post("/auth/login", {
-    email,
-    password,
-  });
-
-  // Save token after successful login
   if (response.data?.success) {
     const token = response.data?.data?.token;
     const user = response.data?.data?.user;
 
-    if (token) {
-      localStorage.setItem("token", token);
-    }
-
-    if (user) {
-      localStorage.setItem(
-        "user",
-        JSON.stringify(user)
-      );
-    }
+    if (token) localStorage.setItem("token", token);
+    if (user) localStorage.setItem("user", JSON.stringify(user));
   }
 
   return response.data;
 };
 
-export const getProfile = async () => {
-  const response = await API.get("/auth/me");
-  return response.data;
-};
+export const getProfile = async () => (await API.get("/auth/me")).data;
 
 export const logoutUser = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
 };
-
-// ==========================================
-// DEFAULT API
-// ==========================================
 
 export default API;
