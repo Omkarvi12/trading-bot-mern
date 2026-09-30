@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createChart, CandlestickSeries } from "lightweight-charts";
 import axios from "axios";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import { API_URL } from "../services/api";
 
 function PriceChart() {
   const chartContainerRef = useRef(null);
