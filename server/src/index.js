@@ -13,19 +13,18 @@ const config = require("./config/config");
 
 // ==========================================
 // AUTH MIDDLEWARE
-// ⚠️ Apni file ka sahi path aur export naam yahan likho
-// (authRoutes.js ya tradeRoutes.js me dekho kaunsa middleware use ho raha hai)
 // ==========================================
 const { protect } = require("./middleware/authMiddleware");
 
 // ==========================================
 // MARKET DATA / MODELS / SERVICES
 // ==========================================
-const { fetchAndStoreCandles } = require("./data/fetcher");
+const { fetchCandles, fetchAndStoreCandles } = require("./data/fetcher");
 const Candle = require("./models/Candle");
 const { calculateIndicators } = require("./indicators/indicatorService");
 const { createStrategy } = require("./strategy/strategyFactory");
 const { runBacktest } = require("./backtest/backtestEngine");
+
 const OrderManager = require("./execution/orderManager");
 const BotEngine = require("./bot/botEngine");
 const { startTradeMonitor } = require("./scheduler/cronJobs");
@@ -45,7 +44,6 @@ const botControlRoutes = require("./routes/botControlRoutes");
 // ==========================================
 const app = express();
 
-// Render proxy ke peeche chalta hai
 app.set("trust proxy", 1);
 
 const botEngine = new BotEngine();
@@ -56,13 +54,15 @@ const orderManager = new OrderManager();
 // ==========================================
 app.use(
   helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginResourcePolicy: {
+      policy: "cross-origin",
+    },
   })
 );
 
 app.use(
   cors({
-    origin: true, // testing ke liye. Baad me sirf apna Vercel URL allow karna
+    origin: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -78,9 +78,94 @@ app.use(morgan("dev"));
 app.use("/api/trades", tradeRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/bot", botControlRoutes);
-app.use("/api/market", marketRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/risk", riskRoutes);
+
+// ==========================================
+// MARKET ROUTES
+// ==========================================
+app.use("/api/market", marketRoutes);
+
+// ==========================================
+// DIRECT MARKET CANDLES ROUTE
+// This guarantees chart API works
+// GET /api/market/candles
+// ==========================================
+app.get("/api/market/candles", async (req, res) => {
+  try {
+    const symbol = req.query.symbol || "BTC/USDT";
+    const timeframe = req.query.timeframe || "5m";
+    const limit = Number(req.query.limit) || 100;
+
+    console.log(
+      `📊 Market candles request: ${symbol} | ${timeframe} | ${limit}`
+    );
+
+    const candles = await fetchCandles(
+      symbol,
+      timeframe,
+      limit
+    );
+
+    return res.json({
+      success: true,
+      data: candles,
+    });
+  } catch (error) {
+    console.error(
+      "❌ Market candles error:",
+      error.message
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch market candles",
+      error: error.message,
+    });
+  }
+});
+
+// ==========================================
+// DIRECT MARKET PRICE ROUTE
+// GET /api/market/price
+// ==========================================
+app.get("/api/market/price", async (req, res) => {
+  try {
+    const symbol = req.query.symbol || "BTC/USDT";
+
+    const CCXTExecutor = require("./execution/ccxtExecutor");
+    const broker = new CCXTExecutor();
+
+    const price = await broker.getCurrentPrice(symbol);
+
+    if (!price || !Number.isFinite(Number(price))) {
+      return res.status(400).json({
+        success: false,
+        message: "Unable to fetch live market price",
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        symbol,
+        price: Number(price),
+        timestamp: new Date(),
+      },
+    });
+  } catch (error) {
+    console.error(
+      "❌ Market price error:",
+      error.message
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch live market price",
+      error: error.message,
+    });
+  }
+});
 
 // ==========================================
 // HEALTH CHECK
@@ -94,7 +179,8 @@ app.get("/", (req, res) => {
 });
 
 // =====================================================
-// MARKET DATA (public: chart bina token ke data leta hai)
+// OLD MARKET DATA TEST ROUTE
+// GET /api/test/market-data
 // =====================================================
 app.get("/api/test/market-data", async (req, res) => {
   try {
@@ -102,7 +188,11 @@ app.get("/api/test/market-data", async (req, res) => {
     const timeframe = req.query.timeframe || "5m";
     const limit = Number(req.query.limit) || 200;
 
-    const candles = await fetchAndStoreCandles(symbol, timeframe, limit);
+    const candles = await fetchAndStoreCandles(
+      symbol,
+      timeframe,
+      limit
+    );
 
     res.json({
       success: true,
@@ -113,7 +203,10 @@ app.get("/api/test/market-data", async (req, res) => {
       data: candles,
     });
   } catch (error) {
-    console.error("❌ Market data error:", error.message);
+    console.error(
+      "❌ Market data error:",
+      error.message
+    );
 
     res.status(500).json({
       success: false,
@@ -124,14 +217,17 @@ app.get("/api/test/market-data", async (req, res) => {
 });
 
 // =====================================================
-// INDICATORS TEST (protected)
+// INDICATORS TEST
 // =====================================================
 app.get("/api/test/indicators", protect, async (req, res) => {
   try {
     const symbol = req.query.symbol || "BTC/USDT";
     const timeframe = req.query.timeframe || "5m";
 
-    const candles = await Candle.find({ symbol, timeframe })
+    const candles = await Candle.find({
+      symbol,
+      timeframe,
+    })
       .sort({ timestamp: 1 })
       .limit(200);
 
@@ -152,7 +248,10 @@ app.get("/api/test/indicators", protect, async (req, res) => {
       data: indicators,
     });
   } catch (error) {
-    console.error("❌ Indicator error:", error.message);
+    console.error(
+      "❌ Indicator error:",
+      error.message
+    );
 
     res.status(500).json({
       success: false,
@@ -163,15 +262,23 @@ app.get("/api/test/indicators", protect, async (req, res) => {
 });
 
 // =====================================================
-// STRATEGY TEST (protected)
+// STRATEGY TEST
 // =====================================================
 app.get("/api/test/strategy", protect, async (req, res) => {
   try {
-    const strategyName = req.query.strategy || "EMA_CROSSOVER";
-    const symbol = req.query.symbol || "BTC/USDT";
-    const timeframe = req.query.timeframe || "5m";
+    const strategyName =
+      req.query.strategy || "EMA_CROSSOVER";
 
-    const candles = await Candle.find({ symbol, timeframe })
+    const symbol =
+      req.query.symbol || "BTC/USDT";
+
+    const timeframe =
+      req.query.timeframe || "5m";
+
+    const candles = await Candle.find({
+      symbol,
+      timeframe,
+    })
       .sort({ timestamp: 1 })
       .limit(200);
 
@@ -182,9 +289,14 @@ app.get("/api/test/strategy", protect, async (req, res) => {
       });
     }
 
-    const indicators = calculateIndicators(candles);
-    const strategy = createStrategy(strategyName);
-    const signal = strategy.generateSignal(indicators);
+    const indicators =
+      calculateIndicators(candles);
+
+    const strategy =
+      createStrategy(strategyName);
+
+    const signal =
+      strategy.generateSignal(indicators);
 
     res.json({
       success: true,
@@ -194,7 +306,10 @@ app.get("/api/test/strategy", protect, async (req, res) => {
       signal,
     });
   } catch (error) {
-    console.error("❌ Strategy error:", error.message);
+    console.error(
+      "❌ Strategy error:",
+      error.message
+    );
 
     res.status(500).json({
       success: false,
@@ -205,14 +320,19 @@ app.get("/api/test/strategy", protect, async (req, res) => {
 });
 
 // =====================================================
-// BOT MANUAL RUN (protected)
+// BOT MANUAL RUN
 // =====================================================
 app.post("/api/bot/run", protect, async (req, res) => {
   try {
-    const result = await botEngine.runCycle();
+    const result =
+      await botEngine.runCycle();
+
     res.json(result);
   } catch (error) {
-    console.error("❌ Bot run error:", error.message);
+    console.error(
+      "❌ Bot run error:",
+      error.message
+    );
 
     res.status(500).json({
       success: false,
@@ -223,89 +343,118 @@ app.post("/api/bot/run", protect, async (req, res) => {
 });
 
 // =====================================================
-// TRADE MONITOR MANUAL RUN (protected)
+// TRADE MONITOR MANUAL RUN
 // =====================================================
-app.post("/api/bot/monitor", protect, async (req, res) => {
-  try {
-    const result = await orderManager.monitorOpenTrades();
+app.post(
+  "/api/bot/monitor",
+  protect,
+  async (req, res) => {
+    try {
+      const result =
+        await orderManager.monitorOpenTrades();
 
-    res.json({
-      success: true,
-      message: "Trade monitoring completed",
-      data: result,
-    });
-  } catch (error) {
-    console.error("❌ Monitor error:", error.message);
+      res.json({
+        success: true,
+        message:
+          "Trade monitoring completed",
+        data: result,
+      });
+    } catch (error) {
+      console.error(
+        "❌ Monitor error:",
+        error.message
+      );
 
-    res.status(500).json({
-      success: false,
-      message: "Failed to monitor trades",
-      error: error.message,
-    });
-  }
-});
-
-// =====================================================
-// BACKTEST (protected)
-// =====================================================
-app.post("/api/backtest", protect, async (req, res) => {
-  try {
-    const {
-      symbol = "BTC/USDT",
-      timeframe = "5m",
-      strategy: strategyName = "EMA_CROSSOVER",
-      initialBalance = 10000,
-      tradeSizePercent = 10,
-      limit = 500,
-    } = req.body;
-
-    const candles = await Candle.find({ symbol, timeframe })
-      .sort({ timestamp: 1 })
-      .limit(Number(limit));
-
-    if (!candles || candles.length < 50) {
-      return res.status(400).json({
+      res.status(500).json({
         success: false,
-        message: "At least 50 candles are required for backtesting",
+        message:
+          "Failed to monitor trades",
+        error: error.message,
+      });
+    }
+  }
+);
+
+// =====================================================
+// BACKTEST
+// =====================================================
+app.post(
+  "/api/backtest",
+  protect,
+  async (req, res) => {
+    try {
+      const {
+        symbol = "BTC/USDT",
+        timeframe = "5m",
+        strategy: strategyName =
+          "EMA_CROSSOVER",
+        initialBalance = 10000,
+        tradeSizePercent = 10,
+        limit = 500,
+      } = req.body;
+
+      const candles = await Candle.find({
+        symbol,
+        timeframe,
+      })
+        .sort({ timestamp: 1 })
+        .limit(Number(limit));
+
+      if (!candles || candles.length < 50) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "At least 50 candles are required for backtesting",
+          data: {
+            symbol,
+            timeframe,
+            candlesAvailable:
+              candles
+                ? candles.length
+                : 0,
+            candlesRequired: 50,
+          },
+        });
+      }
+
+      const strategy =
+        createStrategy(strategyName);
+
+      const result = runBacktest({
+        candles,
+        strategy,
+        initialBalance:
+          Number(initialBalance),
+        tradeSizePercent:
+          Number(tradeSizePercent),
+      });
+
+      res.json({
+        success: true,
+        message:
+          "Backtest completed successfully",
         data: {
           symbol,
           timeframe,
-          candlesAvailable: candles ? candles.length : 0,
-          candlesRequired: 50,
+          strategy: strategyName,
+          candlesUsed: candles.length,
+          ...result,
         },
       });
+    } catch (error) {
+      console.error(
+        "❌ Backtest error:",
+        error.message
+      );
+
+      res.status(500).json({
+        success: false,
+        message: "Backtest failed",
+        error: error.message,
+      });
     }
-
-    const strategy = createStrategy(strategyName);
-
-    const result = runBacktest({
-      candles,
-      strategy,
-      initialBalance: Number(initialBalance),
-      tradeSizePercent: Number(tradeSizePercent),
-    });
-
-    res.json({
-      success: true,
-      message: "Backtest completed successfully",
-      data: {
-        symbol,
-        timeframe,
-        strategy: strategyName,
-        candlesUsed: candles.length,
-        ...result,
-      },
-    });
-  } catch (error) {
-    console.error("❌ Backtest error:", error.message);
-
-    res.status(500).json({
-      success: false,
-      message: "Backtest failed",
-      error: error.message,
-    });
   }
-});
+);
 
 // =====================================================
 // 404 HANDLER
@@ -321,31 +470,49 @@ app.use((req, res) => {
 // GLOBAL ERROR HANDLER
 // =====================================================
 app.use((err, req, res, next) => {
-  console.error("❌ Global error:", err.message);
+  console.error(
+    "❌ Global error:",
+    err.message
+  );
 
   res.status(err.status || 500).json({
     success: false,
-    message: err.message || "Internal server error",
-    error: config.nodeEnv === "development" ? err.stack : undefined,
+    message:
+      err.message ||
+      "Internal server error",
+    error:
+      config.nodeEnv === "development"
+        ? err.stack
+        : undefined,
   });
 });
 
 // =====================================================
-// START SERVER (DB connect hone ke baad)
+// START SERVER
 // =====================================================
-const PORT = process.env.PORT || 5000;
+const PORT =
+  process.env.PORT || 5000;
 
 const startServer = async () => {
   try {
-    // Chalta hai chahe connectDB Promise return kare ya nahi
-    await Promise.resolve(connectDB());
+    await Promise.resolve(
+      connectDB()
+    );
   } catch (error) {
-    console.error("❌ Database connection failed:", error.message);
+    console.error(
+      "❌ Database connection failed:",
+      error.message
+    );
   }
 
   app.listen(PORT, () => {
-    console.log(`🚀 TRADINGBOT server running on port ${PORT}`);
-    console.log(`🤖 Trading mode: ${config.tradingMode}`);
+    console.log(
+      `🚀 TRADINGBOT server running on port ${PORT}`
+    );
+
+    console.log(
+      `🤖 Trading mode: ${config.tradingMode}`
+    );
 
     startTradeMonitor();
   });

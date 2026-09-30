@@ -3,18 +3,18 @@ import axios from "axios";
 // ==========================================
 // API BASE URL
 // ==========================================
-// VITE_API_URL me sirf backend ka root daalo, /api ke bina:
-//   https://trading-bot-mern.onrender.com
-// Agar galti se /api ya trailing slash laga bhi diya to niche clean ho jayega.
-const RAW_URL =
-  import.meta.env.VITE_API_URL || "https://trading-bot-mern.onrender.com";
 
-export const API_URL = RAW_URL.replace(/\/+$/, "").replace(/\/api$/, "");
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-const API_BASE_URL = `${API_URL}/api`;
+export { API_URL };
+
+// ==========================================
+// API INSTANCE
+// ==========================================
 
 const API = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: `${API_URL}/api`,
   headers: {
     "Content-Type": "application/json",
   },
@@ -23,6 +23,7 @@ const API = axios.create({
 // ==========================================
 // TOKEN INTERCEPTOR
 // ==========================================
+
 const attachToken = (config) => {
   const token = localStorage.getItem("token");
 
@@ -33,15 +34,15 @@ const attachToken = (config) => {
   return config;
 };
 
-API.interceptors.request.use(attachToken, (error) => Promise.reject(error));
-
-// Dashboard / PriceChart jaise files seedha `axios` use karte hain,
-// unme bhi token jaye isliye global axios pe bhi lagaya hai.
-axios.interceptors.request.use(attachToken);
+API.interceptors.request.use(
+  attachToken,
+  (error) => Promise.reject(error)
+);
 
 // ==========================================
 // RESPONSE INTERCEPTOR
 // ==========================================
+
 API.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -52,7 +53,11 @@ API.interceptors.response.use(
       localStorage.removeItem("user");
 
       const path = window.location.pathname;
-      if (!path.startsWith("/login") && !path.startsWith("/register")) {
+
+      if (
+        !path.startsWith("/login") &&
+        !path.startsWith("/register")
+      ) {
         window.location.replace("/login");
       }
     }
@@ -64,19 +69,30 @@ API.interceptors.response.use(
 // ==========================================
 // BOT
 // ==========================================
-export const getBotStatus = async () => (await API.get("/bot/status")).data;
-export const startBot = async () => (await API.post("/bot/start")).data;
-export const stopBot = async () => (await API.post("/bot/stop")).data;
+
+export const getBotStatus = async () =>
+  (await API.get("/bot/status")).data;
+
+export const startBot = async () =>
+  (await API.post("/bot/start")).data;
+
+export const stopBot = async () =>
+  (await API.post("/bot/stop")).data;
 
 // ==========================================
 // DASHBOARD / TRADES
 // ==========================================
-export const getDashboard = async () => (await API.get("/dashboard")).data;
-export const getTrades = async () => (await API.get("/trades")).data;
+
+export const getDashboard = async () =>
+  (await API.get("/dashboard")).data;
+
+export const getTrades = async () =>
+  (await API.get("/trades")).data;
 
 // ==========================================
 // BACKTEST
 // ==========================================
+
 export const runBacktest = async ({
   symbol = "BTC/USDT",
   timeframe = "5m",
@@ -98,36 +114,87 @@ export const runBacktest = async ({
 };
 
 // ==========================================
-// RISK / MARKET
+// RISK
 // ==========================================
-export const getRiskStatus = async () => (await API.get("/risk/status")).data;
+
+export const getRiskStatus = async () =>
+  (await API.get("/risk/status")).data;
+
+// ==========================================
+// MARKET
+// ==========================================
 
 export const getMarketPrice = async (symbol = "BTC/USDT") =>
-  (await API.get("/market/price", { params: { symbol } })).data;
+  (
+    await API.get("/market/price", {
+      params: { symbol },
+    })
+  ).data;
+
+export const getMarketCandles = async ({
+  symbol = "BTC/USDT",
+  timeframe = "5m",
+  limit = 100,
+} = {}) => {
+  const response = await API.get("/market/candles", {
+    params: {
+      symbol,
+      timeframe,
+      limit,
+    },
+  });
+
+  return response.data;
+};
 
 // ==========================================
 // AUTH
 // ==========================================
-export const registerUser = async ({ name, email, password }) => {
-  const response = await API.post("/auth/register", { name, email, password });
+
+export const registerUser = async ({
+  name,
+  email,
+  password,
+}) => {
+  const response = await API.post("/auth/register", {
+    name,
+    email,
+    password,
+  });
+
   return response.data;
 };
 
-export const loginUser = async ({ email, password }) => {
-  const response = await API.post("/auth/login", { email, password });
+export const loginUser = async ({
+  email,
+  password,
+}) => {
+  const response = await API.post("/auth/login", {
+    email,
+    password,
+  });
 
   if (response.data?.success) {
     const token = response.data?.data?.token;
     const user = response.data?.data?.user;
 
-    if (token) localStorage.setItem("token", token);
-    if (user) localStorage.setItem("user", JSON.stringify(user));
+    if (token) {
+      localStorage.setItem("token", token);
+    }
+
+    if (user) {
+      localStorage.setItem(
+        "user",
+        JSON.stringify(user)
+      );
+    }
   }
 
   return response.data;
 };
 
-export const getProfile = async () => (await API.get("/auth/me")).data;
+export const getProfile = async () =>
+  (await API.get("/auth/me")).data;
 
 export const logoutUser = () => {
   localStorage.removeItem("token");

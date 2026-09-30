@@ -20,15 +20,21 @@ function PriceChart() {
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
       height: 400,
+
       layout: {
         background: { color: "transparent" },
         textColor: "#9ca3af",
       },
+
       grid: {
         vertLines: { color: "#1f2937" },
         horzLines: { color: "#1f2937" },
       },
-      rightPriceScale: { borderColor: "#374151" },
+
+      rightPriceScale: {
+        borderColor: "#374151",
+      },
+
       timeScale: {
         borderColor: "#374151",
         timeVisible: true,
@@ -62,7 +68,9 @@ function PriceChart() {
     // CLEANUP
     return () => {
       window.removeEventListener("resize", handleResize);
+
       chart.remove();
+
       chartRef.current = null;
       seriesRef.current = null;
     };
@@ -77,13 +85,18 @@ function PriceChart() {
         setLoading(true);
         setError("");
 
-        const response = await axios.get(`${API_URL}/api/test/market-data`, {
-          params: {
-            symbol: "BTC/USDT",
-            timeframe: "5m",
-            limit: 100,
-          },
-        });
+        const response = await axios.get(
+          `${API_URL}/api/market/candles`,
+          {
+            params: {
+              symbol: "BTC/USDT",
+              timeframe: "5m",
+              limit: 100,
+            },
+          }
+        );
+
+        console.log("📊 Market candles response:", response.data);
 
         if (!response.data?.success) {
           throw new Error("Market data request failed");
@@ -95,10 +108,14 @@ function PriceChart() {
           throw new Error("No candle data available");
         }
 
-        // CONVERT DATA
+        // ==========================================
+        // CONVERT DATA FOR LIGHTWEIGHT CHART
+        // ==========================================
         const chartData = candles
           .map((candle) => ({
-            time: Math.floor(new Date(candle.timestamp).getTime() / 1000),
+            time: Math.floor(
+              new Date(candle.timestamp).getTime() / 1000
+            ),
             open: Number(candle.open),
             high: Number(candle.high),
             low: Number(candle.low),
@@ -107,6 +124,10 @@ function PriceChart() {
           .filter(
             (candle) =>
               candle.time &&
+              Number.isFinite(candle.open) &&
+              Number.isFinite(candle.high) &&
+              Number.isFinite(candle.low) &&
+              Number.isFinite(candle.close) &&
               candle.open > 0 &&
               candle.high > 0 &&
               candle.low > 0 &&
@@ -114,7 +135,9 @@ function PriceChart() {
           )
           .sort((a, b) => a.time - b.time);
 
+        // ==========================================
         // REMOVE DUPLICATE TIMESTAMPS
+        // ==========================================
         const uniqueData = [];
         const timestamps = new Set();
 
@@ -125,14 +148,28 @@ function PriceChart() {
           }
         }
 
+        if (uniqueData.length === 0) {
+          throw new Error("No valid candle data available");
+        }
+
+        // ==========================================
         // SET CHART DATA
+        // ==========================================
         if (seriesRef.current) {
           seriesRef.current.setData(uniqueData);
-          chartRef.current?.timeScale().fitContent();
+
+          if (chartRef.current) {
+            chartRef.current.timeScale().fitContent();
+          }
         }
       } catch (err) {
         console.error("❌ Chart error:", err);
-        setError(err.message || "Failed to load market data");
+
+        setError(
+          err.response?.data?.message ||
+            err.message ||
+            "Failed to load market data"
+        );
       } finally {
         setLoading(false);
       }
@@ -169,7 +206,7 @@ function PriceChart() {
         </div>
       )}
 
-      {error && (
+      {error && !loading && (
         <div
           className="chart-error"
           style={{
@@ -179,6 +216,7 @@ function PriceChart() {
             alignItems: "center",
             justifyContent: "center",
             zIndex: 2,
+            color: "#ef4444",
           }}
         >
           {error}
